@@ -1,0 +1,13 @@
+FROM balenalib/%%BALENA_ARCH%%-debian-python
+
+RUN install_packages \
+    nano \
+    i2c-tools
+
+WORKDIR /usr/src/app
+
+RUN pip3 install smbus2 paho-mqtt requests pyserial
+
+COPY *.py ./
+# CMD balena-idle
+CMD ["python3", "sensor.py"]

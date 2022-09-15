@@ -39,4 +39,12 @@ services:
     image: eclipse-mosquitto:1.6.15
     ports:
       - "1883:1883"
-    restart: always  
+    restart: always 
+  rain-wind:
+    build: rain-wind
+    privileged: true
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.sysfs: '1'
+      io.balena.features.supervisor-api: '1'
+
