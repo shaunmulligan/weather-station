@@ -10,7 +10,14 @@ import requests
 import serial
 import smbus2 as smbus
 
+import board
+import adafruit_htu31d
+
 bus = smbus.SMBus(1)
+
+i2c = board.I2C()  # uses board.SCL and board.SDA
+htu = adafruit_htu31d.HTU31D(i2c)
+print("Found HTU31D with serial number", hex(htu.serial_number[0]))
 
 def mqtt_detect():
     
@@ -175,14 +182,10 @@ def weather(mclient, mqtt_addy):
         my_humidity = (my_int_humidity)
         print ("Humidity:" + '%.2d' % my_humidity + "%")
 
-        # ###Barometric Pressure###
-        # for barometric in range(len(barometrics)):
-        #     barometrics[barometric] = int(barometrics[barometric])
-        # my_barometricval = ''.join(map(str, barometrics))
-        # #print("value of barometer:" + my_barometricval)
-        # my_float_barometric = float(my_barometricval)
-        # my_barometric_total = (my_float_barometric / 10.00)
-        # print ("Barometric Pressure:" + '%.2f' % my_barometric_total + "hPa")
+        ###Temp + Humidity (Htu31d)###
+        htu31_temperature, htu31_relative_humidity = htu.measurements
+        print("HTU31d - Temperature: %0.1f C" % htu31_temperature)
+        print("HTU31d - Humidity: %0.1f %%" % htu31_relative_humidity)
 
         sensor_data = {
             "Wind_Direction" : my_dir_ad,
@@ -192,6 +195,8 @@ def weather(mclient, mqtt_addy):
             "Rainfall(1hr)" : my_rf1h_next,
             "Rainfall(24hr)" : my_rf24h_next,
             "Box Humidity" : my_humidity,
+            "htu31d Temperature": htu31_temperature,
+            "htu1d Humidity": htu31_relative_humidity
         }
         mclient.publish('sensors', json.dumps(sensor_data))
         # r = requests.post('http://connector:8080', json=sensor_data)

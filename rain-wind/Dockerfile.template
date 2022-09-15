@@ -2,11 +2,12 @@ FROM balenalib/%%BALENA_ARCH%%-debian-python
 
 RUN install_packages \
     nano \
-    i2c-tools
+    i2c-tools \
+    build-essential
 
 WORKDIR /usr/src/app
 
-RUN pip3 install smbus2 paho-mqtt requests pyserial
+RUN pip3 install smbus2 paho-mqtt requests pyserial adafruit-circuitpython-htu31d RPi.GPIO
 
 COPY *.py ./
 # CMD balena-idle
