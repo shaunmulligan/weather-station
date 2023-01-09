@@ -1,64 +1,24 @@
-![logo](https://raw.githubusercontent.com/balena-io-projects/balena-sense/master/images/logo.png)
 
-**Starter project that lets anyone start monitoring envrionmental sensor data from a beautiful, remotely accessible dashboard.**
 
 ## Highlights
 
-- **Monitor temperature, humidity, and air quality**: Supports a variety of I2C sensors to build your own monitoring system for your environment.
+- **Monitor temperature, humidity, rainfall, and wind speed**: The station makes use of an off the shelf [Wind vane, anemometer and rain bucket](https://shop.pimoroni.com/products/wind-and-rain-sensors-for-weather-station-wind-vane-anemometer-rain-gauge?variant=39350966648915) setup coupled with a high precision I2C [HTU31-d temperature sensor](https://shop.pimoroni.com/products/adafruit-htu31-temperature-humidity-sensor-breakout-board-stemma-qt-qwiic?variant=39337572597843) 
 - **Visualize data from one remote dashboard**: Access your customizable environmental data dashboard from anywhere.
-- **Compatible with other automation tools**: Integrate balenaSense with home automation tools, such as Home Assistant.
-
-## Setup and configuration
-
-Run balenaSense quickly by deploying it to a balenaCloud application. Log in and deploy the application with just one click by using the button below:
-
-[![](https://balena.io/deploy.svg)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/balenalabs/balena-sense)
-
-Or add your device to the [balenaSense Open Fleet](https://hub.balena.io/balenalabs/balenasense) to try the project out without a balenaCloud account.
-
-## Documentation 
-
-Head over to our [docs](https://sense.balenalabs.io/docs) for detailed installation and usage instructions, customization options and more!
-
-Or, check out our detailed build guide on the [balena blog](https://www.balena.io/blog/balenasense-v2-updated-temperature-pressure-and-humidity-monitoring-for-raspberry-pi/).
-
-## Motivation
 
 ![](https://assets.balena.io/blog-common/2021/07/sensev2.png)
 
-balenaSense is a Raspberry Pi [balenaCloud](https://www.balena.io/cloud/) starter project that takes readings from a supported sensor (such as the Bosch BME680), stores them using InfluxDB and generates a dashboard using Grafana. The Bosch BME680 is recommended as it includes sensors for temperature, humidity, pressure and gas content and is available on a breakout board from a few different places for around $10-$20.
+## Motivation
 
-We want to create a project that motivates users to build their own environmental sensor project whether for home or for professional use with privacy and customization in mind.
-
-### What changed?
-Version 2 of balenaSense is built using [blocks](https://www.balena.io/blog/introducing-balenablocks-jumpstart-your-iot-app-development/), which are intelligent, drop-in chunks of functionality. This is a major change from earlier versions of balenaSense which used a number of configuration files to tie together the InfluxDB database, Grafana dashboards and sensor readings. Blocks are designed to work together and use auto-discovery (which can be overridden) to pass data amongst themselves.
+I wanted to have hyperlocal weather data that I could check from my bed. Most of the weather prediction sites for my hometown were always pretty far off the actual realtime conditions. It always felt warmer or colder than my phone said it was. Or the predicted level of wind was way lower than the state in my garden. So I decided to build something to give me a sense of what the exact conditions were in my garden, right now :D
 
 ### How it works
-The task of reading data from the sensors is now handled by our new [sensor block](https://github.com/balenablocks/sensor). Instead of installing separate drivers and using custom code for each type of sensor, the sensor block utilizes Industrial IO (IIO) and relies on the variety of sensor drivers already included in the Linux kernel itself. (You can learn more about the sensor block and its use of IIO in [this recent blog post](https://www.balena.io/blog/balenablocks-in-depth-sensor-and-pulse/).) This means balenaSense now supports a wider variety of sensors as well as multiple connected sensors. 
 
-Currently, only I2C sensors that are not mounted on a HAT are supported by the sensor block. This means 1-wire sensors, the Raspberry Pi Sense-HAT, and Pimoroni Enviro+ Air Quality HAT are no longer supported by balenaSense. 
+This project builds heavily on the great work done by my previous teammates at balena.io and is based on their great [balena-sense](https://github.com/balenalabs/balena-sense) project. Balena-sense cleverly utilizes Industrial IO (IIO) and relies on the variety of sensor drivers already included in the Linux kernel itself. (You can learn more about the sensor block and its use of IIO in [this recent blog post](https://www.balena.io/blog/balenablocks-in-depth-sensor-and-pulse/).) This made it super easy to interface with the htu31-d temp sensor and pump data into the influx time series database.
 
-The indoor air quality (IAQ) readings in previous versions of balenaSense were dependent on propriatery software that had recurring breaking changes. On multiple occasions, the entire project was broken while new changes were investigated and merged. In addition, to obtain accurate air quality readings on the BME680, specific burn in procedures are required that balenaSense did not support. For these reasons, air quality readings are no longer a part of balenaSense.
+![](/images/weather-vane.jpg)
 
-### balenaBlocks and extensibility
+Unfortunately, the wind and rainfall sensor is not I2C and unsupported by IIO. Instead, it uses an odd/custom serial protocol. For this, I created a simple docker service that uses python to pull data out of the serial interface and then posts it via MQTT to the balena-sense connector block that then marshalls it into the DB.
 
-[balenaBlocks](https://github.com/balenablocks) are open source and extendable! We're looking into non-proprietary ways to support air quality readings and sensors on HATs: PRs are welcome! We believe that this block-based balenaSense is a more flexible solution overall, and a better base for adding more features as time goes on. If there is a feature that you want to see reinstated, please add an issue on [the repo](https://github.com/balenalabs/balena-sense).
+To insulate and protect the temperature sensor, I created and 3D printed a [Stevenson Screen](https://en.wikipedia.org/wiki/Stevenson_screen) as seen below:
 
-## Contributing
-
-Do you want to help make balenaSense better? Take a look at our [Contributing Guide](contributing). Hope to see you around!
-
-## Getting Help
-
-If you're having any problem, please [raise an issue](https://github.com/balenalabs/balena-sense/issues/new) on GitHub and we will be happy to help. You can also find help on the balenaForums, in a special section [dedicated to balenaSense](https://forums.balena.io/c/project-help/balenasense/86).
-
-## License
-
-balenaSense is free software, and may be redistributed under the terms specified in the [license](https://github.com/balenalabs/balena-sound/blob/master/LICENSE).
-
-## Setup guides
-A full guide covering the initial setup of this project is available on [our blog](https://www.balena.io/blog/balenasense-v2-updated-temperature-pressure-and-humidity-monitoring-for-raspberry-pi/).
-
-## Become a balena poweruser
-
-Want to learn more about what makes balena work? Try one of our [masterclasses](https://www.balena.io/docs/learn/more/masterclasses/overview/). Each lesson is a self-contained, deeply detailed walkthrough on core skills you need to be successful with your next edge project.
+![](/images/Temp-sensor.jpg)
